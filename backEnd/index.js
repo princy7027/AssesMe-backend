@@ -1,33 +1,39 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const dotenv = require('dotenv');
 const AuthRouter = require('./Routers/AuthRouter');
-const QuestionRouter = require('./Routers/QuestionRouter'); 
-require('dotenv').config();
+const QuestionRouter = require('./Routers/QuestionRouter');
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+// Middleware
 app.use(express.json());
 app.use(cors());
 
-mongoose.connect("mongodb://127.0.0.1:27017/assessMe", {
+// MongoDB Atlas Connection
+mongoose.connect("mongodb+srv://kalyanidave2004:1234@project.pbdln.mongodb.net/assessMe?retryWrites=true&w=majority&appName=Project", {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => {
-    console.log("MongoDB connected successfully!");
+    console.log("MongoDB Atlas connected successfully!");
 }).catch((err) => {
-    console.error("MongoDB connection error:", err);
+    console.error("MongoDB Atlas connection error:", err);
 });
 
+// Test Route
 app.get('/p', (req, res) => {
     res.send('HI Kalyani Dave');
 });
 
+// Routes
 app.use('/auth', AuthRouter);
 app.use('/questions', QuestionRouter);
 
-
+// Start Server
 app.listen(PORT, () => {
     console.log(`Server is Running on PORT ${PORT}`);
 });
