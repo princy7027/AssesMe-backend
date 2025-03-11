@@ -1,40 +1,32 @@
 const mongoose = require("mongoose");
-const Schema = mongoose.Schema; 
+const Schema = mongoose.Schema;
 
 const QuestionSchema = new Schema({
     examId: {
         type: Schema.Types.ObjectId,
-        ref: "exams",
-        required: true
-    },
-    topicName: {
-        type: String,
+        ref: "Exam",
         required: true
     },
     questionText: {
         type: String,
         required: true
     },
-    questionType: {
+    queType: {
         type: String,
-        enum: ["MCQ", "Short", "Fill"],
+        enum: ["MCQ", "Short Answer", "Long Answer"],
         required: true
     },
-    options: {
-        type: Map,
-        of: String,
-        default: null // Only for MCQ
-    },
-    correctAnswer: {
-        type: Schema.Types.Mixed, // Can be a string or an array
-        required: true
-    },
-    createdBy: {
-        type: Schema.Types.ObjectId,
-        ref: "users",
+    options: [{
+        type: String  // Only for MCQs
+    }],
+    correctAnswer: [{
+        type: String  // Can be multiple answers for MCQ
+    }],
+    marks: {
+        type: Number,
         required: true
     }
-}, { timestamps: true });
+});
 
-const QuestionModel = mongoose.model("questions", QuestionSchema);
-module.exports = QuestionModel;
+const Question = mongoose.model('Question', QuestionSchema);
+module.exports = Question;

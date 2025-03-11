@@ -4,6 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const AuthRouter = require('./Routers/AuthRouter');
 const QuestionRouter = require('./Routers/QuestionRouter');
+const ExamRouter = require('./Routers/ExamRoutes')
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.get('/p', (req, res) => {
 // Routes
 app.use('/auth', AuthRouter);
 app.use('/questions', QuestionRouter);
+app.use('/exam' , ExamRouter);
 
 // Start Server
 app.listen(PORT, () => {
