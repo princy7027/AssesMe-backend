@@ -7,9 +7,6 @@ const QuestionSchema = new Schema({
         ref: "Exam",
         required: true
     },
-    subjectName:{
-        type:String,
-    },
     topicName:{
         type:String
     },
@@ -19,7 +16,7 @@ const QuestionSchema = new Schema({
     },
     queType: {
         type: String,
-        enum: ["MCQ", "Short Answer", "Long Answer"],
+        enum: ["MCQ", "ShortAnswer", "fillInTheBlank"],
         required: true
     },
     options: [{
@@ -28,7 +25,7 @@ const QuestionSchema = new Schema({
     correctAnswer: [{
         type: String  // Can be multiple answers for MCQ
     }],
-    marks: {
+    marks: {0
         type: Number,
         required: true
     }
