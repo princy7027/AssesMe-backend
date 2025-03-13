@@ -7,6 +7,12 @@ const QuestionSchema = new Schema({
         ref: "Exam",
         required: true
     },
+    subjectName:{
+        type:String,
+    },
+    topicName:{
+        type:String
+    },
     questionText: {
         type: String,
         required: true
