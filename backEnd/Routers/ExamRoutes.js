@@ -1,4 +1,4 @@
-const { createExam, deleteExam, getAllExamData, getExamById } = require('../Controllers/ExamController');
+const { createExam, deleteExam, getAllExamData, getExamById, updateExam } = require('../Controllers/ExamController');
 
 const router = require('express').Router();
 

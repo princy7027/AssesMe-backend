@@ -7,6 +7,10 @@ const QuestionSchema = new Schema({
         ref: "Exam",
         required: true
     },
+    questionData :[{
+    questionId:{
+        type:Number
+    },
     topicName:{
         type:String
     },
@@ -25,11 +29,12 @@ const QuestionSchema = new Schema({
     correctAnswer: [{
         type: String  // Can be multiple answers for MCQ
     }],
-    marks: {0
+    marks: {
         type: Number,
         required: true
     }
+    }]
 });
 
-const Question = mongoose.model('Question', QuestionSchema);
+const Question = mongoose.model('Questions', QuestionSchema);
 module.exports = Question;

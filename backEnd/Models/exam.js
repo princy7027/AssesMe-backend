@@ -1,41 +1,49 @@
-// const mongoose = require("mongoose");
-// const Schema = mongoose.Schema; 
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema; 
 
-// const ExamSchema = new Schema({
-//     examName: {
-//         type: String,
-//         required: true
-//     },
-//     topic: {
-//         type: String,
-//         required: true
-//     },
-//     examDate: {
-//         type: Date,
-//         required: true
-//     },
-//     creationDate: {
-//         type: Date,
-//         default: Date.now
-//     },
-//     startTime: {
-//         type: String,  // Format: "HH:MM AM/PM"
-//         required: true
-//     },
-//     duration: {
-//         type: Number, // In minutes
-//         required: true
-//     },
-//     createdBy: {
-//         type: Schema.Types.ObjectId,
-//         ref: "users",
-//         required: true
-//     },
-//     totalQuestions: {
-//         type: Number,
-//         required: true
-//     }
-// }, { timestamps: true });
+const ExamSchema = new Schema({
+    examName: {
+        type: String,
+        // required: true
+    },
+    subject: {
+        type: String,
+        // required: true
+    },
+    examDate: {
+        type: Date,
+        // required: true
+    },
+    startTime: {
+        type: Date, 
+        // required: true
+    },
+    endTime: {
+        type: Date,  
+        // required: true
+    },
+    totalMarks: {
+        type: Number,
+        // required: true
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    createdBy: {
+        type: String
+    },
+    editedAt: {
+        type: Date
+    },
+    editedBy: {
+        type: String
+    },
+    questions: [{
+        type: Schema.Types.ObjectId, 
+        ref: "Question"  
+    }]
+});
 
-// // const ExamModel = mongoose.model("exams", ExamSchema);
-// // module.exports = ExamModel;
+const Exam = mongoose.model('Exams', ExamSchema);
+module.exports = Exam;
