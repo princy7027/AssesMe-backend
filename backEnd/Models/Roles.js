@@ -10,4 +10,4 @@ const roleSchema = new Schema({
 // roleName: examiner,
 // right: [create-exams , marks , students-data , terminate-user]
 
-exports.roleSchema = new mongoose.model('roles' , roleSchema);
+exports.roleSchema = new mongoose.model('Roles' , roleSchema);
