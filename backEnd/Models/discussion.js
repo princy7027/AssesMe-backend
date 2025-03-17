@@ -13,7 +13,7 @@ const DiscussionSchema = new mongoose.Schema({
                 ref: 'Students',
                 required: true
             },
-            commentText: {
+            discussionText: {
                 type: String,
                 required: true
             },

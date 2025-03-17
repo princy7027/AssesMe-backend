@@ -7,24 +7,14 @@ exports.addDiscussion = async (req, res) => {
     try {
         const { examId, studentId, discussionText } = req.body;
 
-        // Validate examId and studentId
         if (!examId || !studentId || !discussionText) {
             return res.status(400).json({ error: "examId, studentId, and discussionText are required" });
         }
-
-        // Ensure examId and studentId are valid MongoDB ObjectIds
-        if (!mongoose.Types.ObjectId.isValid(examId) || !mongoose.Types.ObjectId.isValid(studentId)) {
-            return res.status(400).json({ error: "Invalid examId or studentId" });
-        }
-
-        // Find existing discussion for the exam
-        let discussion = await Discussion.findOne({ examId });
 
         if (!discussion) {
             discussion = new Discussion({ examId, discussions: [] });
         }
 
-        // Ensure discussions is an array
         if (!Array.isArray(discussion.discussions)) {
             discussion.discussions = [];
         }
