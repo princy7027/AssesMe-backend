@@ -9,7 +9,7 @@ const AuthRouter = require('./Routers/AuthRouter');
 const ExamRouter = require('./Routers/ExamRoutes');
 const QuestionRouter = require('./Routers/Question');
 const StudentRouter = require('./Routers/Student');
-const DiscussionRouter = require('./Routers/DiscussionRouter'); // Added discussion routes
+const Discussion = require('./Routers/Discussion'); 
 
 dotenv.config();
 
@@ -43,7 +43,7 @@ app.use('/auth', AuthRouter);
 app.use('/question', QuestionRouter);
 app.use('/exam', ExamRouter);
 app.use('/student', StudentRouter);
-app.use('/discussion', DiscussionRouter);
+app.use('/discussion', Discussion);
 io.on('connection', (socket) => {
     console.log('New client connected');
 

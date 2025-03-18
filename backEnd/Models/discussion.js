@@ -1,29 +1,26 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-const DiscussionSchema = new mongoose.Schema({
+const DiscussionSchema = new Schema({
     examId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Exams',
+        type: Schema.Types.ObjectId,
+        ref: "Exam",
         required: true
     },
-    comments: [
-        {
-            studentId: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'Students',
-                required: true
-            },
-            discussionText: {
-                type: String,
-                required: true
-            },
-            createdAt: {
-                type: Date,
-                default: Date.now
-            }
-        }
-    ]
+    studentId: {
+        type: Schema.Types.ObjectId,
+        ref: "Student",
+        required: true
+    },
+    text: {
+        type: String,
+        required: true
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
 });
 
-const Discussion = mongoose.model('discussion', DiscussionSchema, 'Discussions');
+const Discussion = mongoose.model("Discussion", DiscussionSchema);
 module.exports = Discussion;
