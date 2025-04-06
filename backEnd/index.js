@@ -13,6 +13,7 @@ const ExamRouter = require('./Routers/ExamRoutes');
 const QuestionRouter = require('./Routers/Question');
 const StudentRouter = require('./Routers/Student');
 const Discussion = require('./Routers/Discussion'); 
+const aiQuestionRouter = require('./Routers/AIQuestion');
 
 dotenv.config();
 
@@ -52,6 +53,8 @@ app.use('/question', QuestionRouter);
 app.use('/exam', ExamRouter);
 app.use('/student', StudentRouter);
 app.use('/discussion', Discussion);
+app.use('/ai-question', aiQuestionRouter);
+
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
