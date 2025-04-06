@@ -1,11 +1,20 @@
-const { createQuestion, updateQuestion, deleteQuestion, getAllQuestions, getQuestionById } = require('../Controllers/QuestionController');
+const { 
+    createQuestions,
+    updateQuestion,
+    deleteQuestion,
+    getQuestionsByExamId
+} = require('../Controllers/QuestionController');
+const auth = require('../middlewares/Auth');
+const express = require('express');
+const router = express.Router();
 
-const router = require('express').Router();
+// Add express.json() middleware for parsing JSON bodies
+router.use(express.json());
 
-router.post('/create-question' , createQuestion)
-    .put('/update-question/:id' , updateQuestion)
-    .delete('/delete-question/:id', deleteQuestion)
-    .get('/all', getAllQuestions)
-    .get('/:id' , getQuestionById)
+router
+    .post('/create/:examId', auth, createQuestions)
+    .put('/update/:examId', auth, updateQuestion)
+    .delete('/delete/:examId', auth, deleteQuestion)
+    .get('/:examId', auth, getQuestionsByExamId);
 
 module.exports = router;

@@ -5,6 +5,9 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const socketIo = require('socket.io');
 
+
+
+const UserRouter = require('./Routers/UserRouter');
 const AuthRouter = require('./Routers/AuthRouter');
 const ExamRouter = require('./Routers/ExamRoutes');
 const QuestionRouter = require('./Routers/Question');
@@ -19,36 +22,62 @@ const io = socketIo(server, { cors: { origin: '*' } });
 
 const PORT = process.env.PORT || 8080;
 
-// Middleware
-app.use(express.json());
+async function connectDB() {
+    try {
+        await mongoose.connect(process.env.MONGO_URI || "mongodb+srv://kalyanidave2004:kd7jan2004@project.pbdln.mongodb.net/assessMe?retryWrites=true&w=majority&appName=Project", {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        });
+        console.log("MongoDB Atlas connected successfully!");
+    } catch (err) {
+        console.error("MongoDB Atlas connection error:", err);
+        process.exit(1);
+    }
+}
+
+
 app.use(cors());
 
-// MongoDB Atlas Connection
-mongoose.connect(process.env.MONGO_URI || "mongodb+srv://kalyanidave2004:kd7jan2004@project.pbdln.mongodb.net/assessMe?retryWrites=true&w=majority&appName=Project", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => {
-    console.log("MongoDB Atlas connected successfully!");
-}).catch((err) => {
-    console.error("MongoDB Atlas connection error:", err);
-});
 
-// Test Route
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.get('/p', (req, res) => {
     res.send('HI Kalyani Dave');
 });
 
-// Routes
+app.use('/user', UserRouter);
 app.use('/auth', AuthRouter);
 app.use('/question', QuestionRouter);
 app.use('/exam', ExamRouter);
 app.use('/student', StudentRouter);
 app.use('/discussion', Discussion);
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        success: false,
+        message: "Internal Server Error",
+        error: err.message
+    });
+});
+
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        message: "Route not found"
+    });
+});
+
 io.on('connection', (socket) => {
     console.log('New client connected');
-
+    
     socket.on('newDiscussion', async (data) => {
-        io.emit('updateDiscussions', data); 
+        try {
+            io.emit('updateDiscussions', data);
+        } catch (error) {
+            console.error('Socket error:', error);
+        }
     });
 
     socket.on('disconnect', () => {
@@ -56,7 +85,22 @@ io.on('connection', (socket) => {
     });
 });
 
-// Start Server
-server.listen(PORT, () => {
-    console.log(`Server is Running on PORT ${PORT}`);
+// ... existing code ...
+
+// Modified server startup
+connectDB().then(() => {
+    try {
+        server.listen(PORT, () => {
+            console.log(`Server is Running on PORT ${PORT}`);
+        }).on('error', (error) => {
+            console.error('Server startup error:', error);
+            process.exit(1);
+        });
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    }
+}).catch(err => {
+    console.error("Server startup failed:", err);
+    process.exit(1);
 });

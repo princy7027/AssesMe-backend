@@ -1,133 +1,162 @@
 const Question = require("../Models/question");
 const Exam = require("../Models/exam");
-const mongoose = require("mongoose");
 
-// Create a new question and add reference in Exam
-const createQuestion = async (req, res) => {
+exports.createQuestions = async (req, res) => {
     try {
-        const { examId, questionData } = req.body;
+        const { examId } = req.params;
+        const { questionData } = req.body;
 
-        if (!mongoose.Types.ObjectId.isValid(examId)) {
-            return res.status(400).json({ message: "Invalid Exam ID" });
+        const exam = await Exam.findById(examId);
+        if (!exam) {
+            return res.status(404).json({
+                success: false,
+                message: "Exam not found"
+            });
         }
 
-        const newQuestion = new Question({
+        const questions = new Question({
             examId,
             questionData
         });
 
-        const savedQuestion = await newQuestion.save();
+        await questions.save();
 
-        // Add the question reference to the Exam model
-        await Exam.findByIdAndUpdate(examId, {
-            $push: { questions: savedQuestion._id }
+        return res.status(201).json({
+            success: true,
+            message: "Questions created successfully",
+            data: questions,
+            token: req.token
         });
-
-        res.status(201).json({ message: "Question created successfully", question: savedQuestion });
     } catch (error) {
-        res.status(500).json({ message: "Error creating question", error: error.message });
+        console.error("Error creating questions:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to create questions",
+            error: error.message
+        });
     }
 };
 
-// Get all questions with Exam details
-const getAllQuestions = async (req, res) => {
+exports.getQuestionsByExamId = async (req, res) => {
     try {
-        const questions = await Question.find().populate("examId");
+        const { examId } = req.params;
+        const questions = await Question.findOne({ examId });
 
-        res.status(200).json(questions);
+        if (!questions) {
+            return res.status(404).json({
+                success: false,
+                message: "No questions found for this exam"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Questions fetched successfully",
+            data: questions,
+            token: req.token
+        });
     } catch (error) {
-        res.status(500).json({ message: "Error fetching questions", error: error.message });
+        console.error("Error fetching questions:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch questions",
+            error: error.message
+        });
     }
 };
 
-// Get a single question by ID
-const getQuestionById = async (req, res) => {
+exports.updateQuestion = async (req, res) => {
     try {
-        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-            return res.status(400).json({ message: "Invalid Question ID" });
+        const { examId } = req.params;
+        const { questionNumber, updates } = req.body;
+
+        const questions = await Question.findOne({ examId });
+        if (!questions) {
+            return res.status(404).json({
+                success: false,
+                message: "Questions not found"
+            });
         }
 
-        const question = await Question.findById(req.params.id).populate("examId");
-
-        if (!question) {
-            return res.status(404).json({ message: "Question not found" });
-        }
-
-        res.status(200).json(question);
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching question", error: error.message });
-    }
-};
-
-// Update a question and ensure Exam reference is maintained
-const updateQuestion = async (req, res) => {
-    try {
-        const { examId, questionData } = req.body;
-        const questionId = req.params.id;
-
-        if (!mongoose.Types.ObjectId.isValid(questionId) || !mongoose.Types.ObjectId.isValid(examId)) {
-            return res.status(400).json({ message: "Invalid ID" });
-        }
-
-        const existingQuestion = await Question.findById(questionId);
-        if (!existingQuestion) {
-            return res.status(404).json({ message: "Question not found" });
-        }
-
-        // Update the question
-        const updatedQuestion = await Question.findByIdAndUpdate(
-            questionId,
-            { examId, questionData },
-            { new: true }
+        const questionIndex = questions.questionData.findIndex(
+            q => q.questionNumber === questionNumber
         );
 
-        // If the examId was changed, update the Exam references
-        if (existingQuestion.examId.toString() !== examId) {
-            await Exam.findByIdAndUpdate(existingQuestion.examId, {
-                $pull: { questions: questionId }
-            });
-
-            await Exam.findByIdAndUpdate(examId, {
-                $push: { questions: questionId }
+        if (questionIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                message: "Question not found"
             });
         }
 
-        res.status(200).json({ message: "Question updated successfully", question: updatedQuestion });
-    } catch (error) {
-        res.status(500).json({ message: "Error updating question", error: error.message });
-    }
-};
-
-// Delete a question and remove reference from Exam
-const deleteQuestion = async (req, res) => {
-    try {
-        const questionId = req.params.id;
-
-        if (!mongoose.Types.ObjectId.isValid(questionId)) {
-            return res.status(400).json({ message: "Invalid Question ID" });
+        // Handle options update if present
+        if (updates.options) {
+            updates.options = updates.options.map(updateOption => {
+                const existingOption = questions.questionData[questionIndex].options.find(
+                    opt => opt._id.toString() === updateOption._id
+                );
+                if (existingOption) {
+                    return {
+                        ...existingOption.toObject(),
+                        ...updateOption
+                    };
+                }
+                return updateOption;
+            });
         }
 
-        const deletedQuestion = await Question.findByIdAndDelete(questionId);
+        Object.assign(questions.questionData[questionIndex], updates);
+        await questions.save();
 
-        if (!deletedQuestion) {
-            return res.status(404).json({ message: "Question not found" });
-        }
+        // Return only the updated question
+        const updatedQuestion = questions.questionData[questionIndex];
 
-        // Remove question reference from Exam
-        await Exam.findByIdAndUpdate(deletedQuestion.examId, {
-            $pull: { questions: questionId }
+        return res.status(200).json({
+            success: true,
+            message: "Question updated successfully",
+            data: updatedQuestion,
+            token: req.token
         });
-
-        res.status(200).json({ message: "Question deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Error deleting question", error: error.message });
+        console.error("Error updating question:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to update question",
+            error: error.message
+        });
     }
 };
 
-module.exports = {
-    createQuestion,
-    getAllQuestions,
-    getQuestionById,
-    updateQuestion,
-    deleteQuestion
+exports.deleteQuestion = async (req, res) => {
+    try {
+        const { examId } = req.params;
+        const { questionNumber } = req.body;
+
+        const questions = await Question.findOne({ examId });
+        if (!questions) {
+            return res.status(404).json({
+                success: false,
+                message: "Questions not found"
+            });
+        }
+
+        questions.questionData = questions.questionData.filter(
+            q => q.questionNumber !== questionNumber
+        );
+        await questions.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Question deleted successfully",
+            data: questions,
+            token: req.token
+        });
+    } catch (error) {
+        console.error("Error deleting question:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to delete question",
+            error: error.message
+        });
+    }
 };

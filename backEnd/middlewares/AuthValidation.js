@@ -1,46 +1,61 @@
-const Joi = require("joi");
-
 const signupValidation = (req, res, next) => {
-    console.log("Incoming Request Body:", req.body); 
+    const { name, email, password, role } = req.body;
 
-    const schema = Joi.object({
-        name: Joi.string().min(3).max(100).required(),
-        email: Joi.string().email().required(),
-        password: Joi.string()
-            .min(6)
-            .max(100)
-            .pattern(new RegExp("^(?=.*[A-Z])(?=.*\\d).+$")) 
-            .required()
-            .messages({
-                "string.pattern.base": "Password must contain at least one uppercase letter and one number."
-            }),
-        role: Joi.string()
-            .valid("student", "exam_creator") 
-            .default("student")
-    });
-
-    const { error } = schema.validate(req.body);
-    if (error) {
-        console.error("Validation Error:", error.details[0].message); 
-        return res.status(400).json({ message: "Bad request", error: error.details[0].message });
+    if (!name || !email || !password) {
+        return res.status(400).json({
+            message: "All fields are required",
+            success: false
+        });
     }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({
+            message: "Invalid email format",
+            success: false
+        });
+    }
+
+    // Password validation (minimum 6 characters)
+    if (password.length < 6) {
+        return res.status(400).json({
+            message: "Password must be at least 6 characters long",
+            success: false
+        });
+    }
+
+    // Role validation
+    if (role && !['admin', 'teacher', 'student'].includes(role)) {
+        return res.status(400).json({
+            message: "Invalid role",
+            success: false
+        });
+    }
+
     next();
 };
 
 const loginValidation = (req, res, next) => {
-    const schema = Joi.object({
-        email: Joi.string().email().required(), 
-        password: Joi.string().min(6).max(100).required()
-    });
+    const { email, password } = req.body;
 
-    const { error } = schema.validate(req.body);
-    if (error) {
-        return res.status(400).json({ message: "Bad request", error: error.details[0].message });
+    if (!email || !password) {
+        return res.status(400).json({
+            message: "Email and password are required",
+            success: false
+        });
     }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({
+            message: "Invalid email format",
+            success: false
+        });
+    }
+
     next();
 };
 
-module.exports = {
-    signupValidation,
-    loginValidation
-};
+module.exports = { signupValidation, loginValidation };

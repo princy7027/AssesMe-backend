@@ -1,14 +1,17 @@
-const express = require("express");
-const { createDiscussion, getDiscussionsByExam, deleteDiscussion } = require("../Controllers/Discussion");
+const express = require('express');
 const router = express.Router();
+const auth = require('../middlewares/Auth');
+const {
+    createDiscussion,
+    getDiscussionsByExam,
+    deleteDiscussion
+} = require('../Controllers/Discussion');
 
-// Create a new discussion
-router.post("/add-Discussion", createDiscussion);
+router.use(express.json());
 
-// Get all discussions for an exam
-router.get("/:examId", getDiscussionsByExam);
-
-// Delete a discussion
-router.delete("/:discussionId", deleteDiscussion);
+router
+    .post('/create', auth, createDiscussion)
+    .get('/:examId', auth, getDiscussionsByExam)
+    .delete('/:discussionId', auth, deleteDiscussion);
 
 module.exports = router;
