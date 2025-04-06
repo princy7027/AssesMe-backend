@@ -5,8 +5,6 @@ const bcrypt = require("bcrypt");
 const signup = async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
-
-        // Prevent normal users from signing up as admin
         if (role === "admin") {
             return res.status(403).json({
                 message: "You cannot register as an admin.",
@@ -27,7 +25,7 @@ const signup = async (req, res) => {
             name, 
             email, 
             password: hashedPassword, 
-            role: role || "student" // Default role is "student"
+            role: role || "student" 
         });
 
         await user.save();
@@ -50,7 +48,6 @@ const signup = async (req, res) => {
     }
 };
 
-
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -66,19 +63,15 @@ const login = async (req, res) => {
         }
 
         const token = jwt.sign(
-            { email: existingUser.email, _id: existingUser._id, role: existingUser.role },
+            { 
+                email: existingUser.email, 
+                _id: existingUser._id, 
+                role: existingUser.role,
+                name: existingUser.name
+            },
             process.env.JWT_SECRET,
             { expiresIn: "24h" }
         );
-
-        let dashboardRoute = "/";
-        if (existingUser.role === "admin") {
-            dashboardRoute = "/admin-dashboard";
-        } else if (existingUser.role === "exam_creator") {
-            dashboardRoute = `/exam-creator/${existingUser._id}`; 
-        } else {
-            dashboardRoute = "/student-dashboard";
-        }
 
         res.status(200).json({
             message: "Login successful!",
@@ -88,8 +81,7 @@ const login = async (req, res) => {
                 name: existingUser.name,
                 email: existingUser.email,
                 role: existingUser.role
-            },
-            dashboardRoute
+            }
         });
 
     } catch (err) {
