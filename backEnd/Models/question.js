@@ -4,59 +4,44 @@ const Schema = mongoose.Schema;
 const QuestionSchema = new Schema({
     examId: {
         type: Schema.Types.ObjectId,
-        ref: "Exam",
+        ref: "Exams",
         required: true
     },
     questionData: [{
         questionNumber: {
             type: Number
         },
-        topicName: {
-            type: String,
-            required: true,
-            trim: true
+        questionTopic:{
+            type:String,
+            required:true,
+            trim:true
         },
         questionText: {
             type: String,
             required: true,
             trim: true
         },
-        difficultyLevel: {
-            type: String,
-            enum: ['easy', 'medium', 'hard'],
-            default: 'medium'
-        },
         queType: {
             type: String,
-            enum: ["MCQ", "ShortAnswer", "fillInTheBlank"],
+            enum: ["MCQ", "ShortAnswer"],
             required: true
         },
-        options: [{
-            optionText: {
-                type: String,
-                trim: true
-            },
-            isCorrect: {
-                type: Boolean,
-                default: false
+        options: {
+            type: [String],  
+            validate: {
+                validator: function(options) {
+                    if (this.queType === 'MCQ') {
+                        return options.length >= 2; 
+                    }
+                    return true;
+                },
+                message: 'MCQ questions must have at least 2 options'
             }
-        }],
-        correctAnswer: [{
-            type: String,
-            trim: true
-        }],
-        explanation: {
-            type: String,
-            trim: true
         },
-        marks: {
-            type: Number,
+        correctAnswer: {
+            type: String,
             required: true,
-            min: 0
-        },
-        isActive: {
-            type: Boolean,
-            default: true
+            trim: true
         }
     }]
 }, {
@@ -73,19 +58,15 @@ QuestionSchema.pre('save', function(next) {
             });
         }
 
-        // Validate each question
+        // Validate questions
         this.questionData.forEach(question => {
             if (question.queType === 'MCQ') {
-                if (!question.options || question.options.length === 0) {
-                    throw new Error('MCQ questions must have options');
+                if (!question.options || question.options.length < 2) {
+                    throw new Error('MCQ questions must have at least 2 options');
                 }
-                const hasCorrectOption = question.options.some(option => option.isCorrect);
-                if (!hasCorrectOption) {
-                    throw new Error('MCQ questions must have at least one correct option');
-                }
-            } else {
-                if (!question.correctAnswer || question.correctAnswer.length === 0) {
-                    throw new Error(`${question.queType} questions must have at least one correct answer`);
+                // Ensure correctAnswer is one of the options
+                if (!question.options.includes(question.correctAnswer)) {
+                    throw new Error('Correct answer must be one of the options for MCQ');
                 }
             }
         });
@@ -94,10 +75,6 @@ QuestionSchema.pre('save', function(next) {
         next(error);
     }
 });
-
-QuestionSchema.methods.calculateTotalMarks = function() {
-    return this.questionData.reduce((sum, question) => sum + question.marks, 0);
-};
 
 // Add index for better query performance
 QuestionSchema.index({ examId: 1 });

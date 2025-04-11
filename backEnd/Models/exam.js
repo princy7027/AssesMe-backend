@@ -20,16 +20,8 @@ const ExamSchema = new Schema({
         type: Date,
         required: true
     },
-    startTime: {
-        type: Date,
-        required: true
-    },
-    endTime: {
-        type: Date,
-        required: true
-    },
     duration: {
-        type: Number,  // Duration in minutes
+        type: Number, 
         required: true
     },
     totalMarks: {
@@ -41,11 +33,6 @@ const ExamSchema = new Schema({
         type: Number,
         required: true,
         min: 1
-    },
-    status: {
-        type: String,
-        enum: ['draft', 'published', 'completed', 'cancelled'],
-        default: 'draft'
     },
     instructions: {
         type: String,
@@ -82,55 +69,28 @@ const ExamSchema = new Schema({
     }
 },{
     timestamps: true,
-    toJSON: { virtuals: true },    // Include virtuals when document is converted to JSON
-    toObject: { virtuals: true }   // Include virtuals when document is converted to plain object
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
 });
-
-
-ExamSchema.methods.updateTotalMarks = async function() {
-    const Question = mongoose.model('Questions');
-    const questions = await Question.findOne({ examId: this._id });
-    
-    if (questions && questions.questionData) {
-        this.totalMarks = questions.questionData.reduce((sum, question) => sum + question.marks, 0);
-        this.numberOfQuestions = questions.questionData.length;
-        await this.save();
-    }
-};
-ExamSchema.virtual('isCurrentlyActive').get(function() {
-    const now = new Date();
-    const startDateTime = new Date(this.startDate);
-    startDateTime.setHours(this.startTime.getHours(), this.startTime.getMinutes());
-    
-    const endDateTime = new Date(this.endDate);
-    endDateTime.setHours(this.endTime.getHours(), this.endTime.getMinutes());
-    
-    return now >= startDateTime && now <= endDateTime && this.isActive;
-});
-
-// Method to update active status
-ExamSchema.methods.updateActiveStatus = function() {
-    const now = new Date();
-    const startDateTime = new Date(this.startDate);
-    startDateTime.setHours(this.startTime.getHours(), this.startTime.getMinutes());
-    
-    const endDateTime = new Date(this.endDate);
-    endDateTime.setHours(this.endTime.getHours(), this.endTime.getMinutes());
-    
-    this.isActive = now >= startDateTime && now <= endDateTime;
-    return this.isActive;
+ExamSchema.statics.updateExamStatuses = async function() {
+    const currentDate = new Date();
+    await this.updateMany(
+        { endDate: { $lt: currentDate } },
+        { $set: { isActive: false } }
+    );
+    console.log('Exam statuses updated based on end dates');
 };
 
-// Add validation to ensure endDate is after startDate
-ExamSchema.pre('save', function(next) {
-    if (this.endDate < this.startDate) {
-        next(new Error('End date must be after start date'));
-    }
-    if (this.endTime < this.startTime) {
-        next(new Error('End time must be after start time'));
-    }
-    next();
+// Add this to automatically check status when finding exams
+ExamSchema.pre('find', function() {
+    const currentDate = new Date();
+    this.where({ endDate: { $lt: currentDate } }).updateOne({}, { isActive: false });
 });
 
 const Exam = mongoose.model('exams', ExamSchema, 'Exams');
+Exam.updateExamStatuses();
+setInterval(() => {
+    Exam.updateExamStatuses();
+}, 3600000);
+
 module.exports = Exam;

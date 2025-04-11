@@ -1,5 +1,6 @@
 const Exam = require("../Models/exam");
 const Question = require("../Models/question");
+const Response = require("../Models/result");
 
 exports.createExam = async (req, res) => {
     try {
@@ -170,6 +171,41 @@ exports.updateExam = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Failed to update exam",
+            error: error.message
+        });
+    }
+};
+
+exports.getStudentExamResponses = async (req, res) => {
+    try {
+        const studentId = req.params.studentId;
+
+        const responses = await Response.find({ userId: studentId })
+            .populate({
+                path: 'examId',
+                select: 'examName subject startDate endDate duration totalMarks passingMarks'
+            });
+
+        const examsList = responses.map(response => ({
+            exam: response.examId,
+            submittedAt: response.submittedAt,
+            score: response.score,
+            isPassed: response.isPassed,
+            totalQuestions: response.responses.length,
+            correctAnswers: response.responses.filter(r => r.isCorrect).length
+        }));
+
+        return res.status(200).json({
+            success: true,
+            message: "Student's exam responses fetched successfully",
+            data: examsList
+        });
+
+    } catch (error) {
+        console.error("Error fetching student's exam responses:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch student's exam responses",
             error: error.message
         });
     }

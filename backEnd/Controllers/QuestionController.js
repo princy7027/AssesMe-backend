@@ -14,9 +14,19 @@ exports.createQuestions = async (req, res) => {
             });
         }
 
+        // Format question data
+        const formattedQuestionData = questionData.map(q => ({
+            questionText: q.questionText,
+            questionTopic: q.questionTopic,
+            queType: q.queType,
+            options: q.queType === 'MCQ' ? q.options : [],
+            correctAnswer: q.correctAnswer.trim(),
+            marks: q.marks || 1
+        }));
+
         const questions = new Question({
             examId,
-            questionData
+            questionData: formattedQuestionData
         });
 
         await questions.save();
@@ -68,7 +78,7 @@ exports.getQuestionsByExamId = async (req, res) => {
 exports.updateQuestion = async (req, res) => {
     try {
         const { examId } = req.params;
-        const { questionNumber, updates } = req.body;
+        const { questionNumber, questionText, questionTopic, queType, options, correctAnswer, marks } = req.body;
 
         const questions = await Question.findOne({ examId });
         if (!questions) {
@@ -89,32 +99,23 @@ exports.updateQuestion = async (req, res) => {
             });
         }
 
-        // Handle options update if present
-        if (updates.options) {
-            updates.options = updates.options.map(updateOption => {
-                const existingOption = questions.questionData[questionIndex].options.find(
-                    opt => opt._id.toString() === updateOption._id
-                );
-                if (existingOption) {
-                    return {
-                        ...existingOption.toObject(),
-                        ...updateOption
-                    };
-                }
-                return updateOption;
-            });
-        }
+        // Update question with new data
+        questions.questionData[questionIndex] = {
+            ...questions.questionData[questionIndex],
+            questionText: questionText || questions.questionData[questionIndex].questionText,
+            questionTopic: questionTopic || questions.questionData[questionIndex].questionTopic,
+            queType: queType || questions.questionData[questionIndex].queType,
+            options: queType === 'MCQ' ? options : [],
+            correctAnswer: correctAnswer ? correctAnswer.trim() : questions.questionData[questionIndex].correctAnswer,
+            marks: marks || questions.questionData[questionIndex].marks
+        };
 
-        Object.assign(questions.questionData[questionIndex], updates);
         await questions.save();
-
-        // Return only the updated question
-        const updatedQuestion = questions.questionData[questionIndex];
 
         return res.status(200).json({
             success: true,
             message: "Question updated successfully",
-            data: updatedQuestion,
+            data: questions.questionData[questionIndex],
             token: req.token
         });
     } catch (error) {
@@ -140,9 +141,16 @@ exports.deleteQuestion = async (req, res) => {
             });
         }
 
+        // Remove the question
         questions.questionData = questions.questionData.filter(
             q => q.questionNumber !== questionNumber
         );
+
+        // Renumber remaining questions
+        questions.questionData.forEach((q, index) => {
+            q.questionNumber = index + 1;
+        });
+
         await questions.save();
 
         return res.status(200).json({

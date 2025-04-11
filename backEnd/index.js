@@ -11,10 +11,10 @@ const UserRouter = require('./Routers/UserRouter');
 const AuthRouter = require('./Routers/AuthRouter');
 const ExamRouter = require('./Routers/ExamRoutes');
 const QuestionRouter = require('./Routers/Question');
-const StudentRouter = require('./Routers/Student');
+// const StudentRouter = require('./Routers/StudentAnswer');
 const Discussion = require('./Routers/Discussion'); 
 const aiQuestionRouter = require('./Routers/AIQuestion');
-
+const ResultRouter = require('./Routers/Result');
 dotenv.config();
 
 const app = express();
@@ -51,9 +51,10 @@ app.use('/user', UserRouter);
 app.use('/auth', AuthRouter);
 app.use('/question', QuestionRouter);
 app.use('/exam', ExamRouter);
-app.use('/student', StudentRouter);
+// app.use('/student', StudentRouter);
 app.use('/discussion', Discussion);
 app.use('/ai-question', aiQuestionRouter);
+app.use('/result', ResultRouter);
 
 
 app.use((err, req, res, next) => {
