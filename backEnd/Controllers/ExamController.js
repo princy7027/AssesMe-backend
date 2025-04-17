@@ -210,3 +210,36 @@ exports.getStudentExamResponses = async (req, res) => {
         });
     }
 };
+
+// ... existing code ...
+
+exports.getUserExams = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        const exams = await Exam.find({ createdBy: userId })
+            .sort('-createdAt')
+            .select('examName subject startDate endDate duration totalMarks numberOfQuestions passingMarks isActive status');
+
+        if (!exams || exams.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No exams found for this user"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "User's exams fetched successfully",
+            data: exams,
+            token: req.token
+        });
+    } catch (error) {
+        console.error("Error fetching user's exams:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch user's exams",
+            error: error.message
+        });
+    }
+};

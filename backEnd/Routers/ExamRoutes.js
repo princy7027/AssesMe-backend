@@ -11,6 +11,7 @@ router.post('/create-exam',auth, createExam)
     .put('/update-exam/:id', auth, updateExam)
     .delete('/delete-exam/:id', auth, deleteExam)
     .get('/all', auth, getAllExams)
-    .get('/:id', auth, getExamById);
+    .get('/:id', auth, getExamById)
+    .get('/user/:userId', auth, getUserExams);
 
 module.exports = router;
