@@ -1,7 +1,7 @@
 const Question = require('../Models/question');
 const Result = require('../Models/result');
 const Exam = require('../Models/exam');
-
+const User = require('../Models/user');
 exports.calculateResult = async (req, res) => {
     try {
         const { examId, userId } = req.params;
@@ -15,6 +15,8 @@ exports.calculateResult = async (req, res) => {
             });
         }
 
+        
+
         const questions = await Question.findOne({ examId });
         if (!questions) {
             return res.status(404).json({
@@ -22,6 +24,30 @@ exports.calculateResult = async (req, res) => {
                 message: "Questions not found"
             });
         }
+
+        const allResults = await Result.find({ examId })
+        .populate({
+            path: 'userId',
+            select: 'name',
+            model: 'User'
+        })
+            .select('obtainedMarks percentage userId');
+            
+
+            const examStatistics = {
+                totalStudents: allResults.length,
+                averageMarks: allResults.length > 0 ? 
+                    allResults.reduce((acc, curr) => acc + curr.obtainedMarks, 0) / allResults.length : 0,
+                highestMarks: allResults.length > 0 ? 
+                    Math.max(...allResults.map(r => r.obtainedMarks)) : 0,
+                lowestMarks: allResults.length > 0 ? 
+                    Math.min(...allResults.map(r => r.obtainedMarks)) : 0,
+                studentsPerformance: allResults.map(r => ({
+                    studentName: r.userId.name,
+                    marks: r.obtainedMarks,
+                    percentage: r.percentage
+                }))
+            };
 
         let obtainedMarks = 0;
         const totalMarks = exam.totalMarks;
@@ -96,7 +122,7 @@ exports.calculateResult = async (req, res) => {
                     correctAnswers: strongAreas.length,
                     incorrectAnswers: weakAreas.length,
                     totalQuestions: questions.questionData.length
-                }
+                },examStatistics 
             },
             token: req.token
         });
