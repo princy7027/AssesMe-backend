@@ -7,6 +7,7 @@ const socketIo = require('socket.io');
 
 
 
+
 const UserRouter = require('./Routers/UserRouter');
 const AuthRouter = require('./Routers/AuthRouter');
 const ExamRouter = require('./Routers/ExamRoutes');
@@ -35,6 +36,11 @@ async function connectDB() {
         process.exit(1);
     }
 }
+
+require('./Models/user');
+require('./Models/exam');
+require('./Models/question');
+require('./Models/result');
 
 
 app.use(cors());

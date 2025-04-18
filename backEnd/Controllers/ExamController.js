@@ -1,6 +1,7 @@
 const Exam = require("../Models/exam");
 const Question = require("../Models/question");
 const Response = require("../Models/result");
+const User = require("../Models/user");
 
 exports.createExam = async (req, res) => {
     try {
@@ -32,7 +33,7 @@ exports.createExam = async (req, res) => {
 
 exports.getAllExams = async (req, res) => {
     try {
-        const exams = await Exam.find();
+        const exams = await Exam.getAllExams(); 
         return res.status(200).json({
             success: true,
             message: "Exams fetched successfully",
