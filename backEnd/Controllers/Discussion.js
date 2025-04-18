@@ -62,10 +62,47 @@ exports.getDiscussionsByExam = async (req, res) => {
     }
 };
 
+// exports.deleteDiscussion = async (req, res) => {
+//     try {
+//         const { discussionId } = req.params;
+//         // const studentId = req.user._id;  // Get studentId from authenticated user
+
+//         const discussion = await Discussion.findById(discussionId);
+//         if (!discussion) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "Discussion not found"
+//             });
+//         }
+
+//         // if (discussion.studentId.toString() !== studentId.toString()) {
+//         //     return res.status(403).json({
+//         //         success: false,
+//         //         message: "Unauthorized to delete this discussion"
+//         //     });
+//         // }
+
+//         discussion.isActive = false;  // Soft delete
+//         await discussion.save();
+
+//         return res.status(200).json({
+//             success: true,
+//             message: "Discussion deleted successfully",
+//             token: req.token
+//         });
+//     } catch (error) {
+//         console.error("Error deleting discussion:", error);
+//         return res.status(500).json({
+//             success: false,
+//             message: "Failed to delete discussion",
+//             error: error.message
+//         });
+//     }
+// };
+
 exports.deleteDiscussion = async (req, res) => {
     try {
         const { discussionId } = req.params;
-        const studentId = req.user._id;  // Get studentId from authenticated user
 
         const discussion = await Discussion.findById(discussionId);
         if (!discussion) {
@@ -75,20 +112,12 @@ exports.deleteDiscussion = async (req, res) => {
             });
         }
 
-        if (discussion.studentId.toString() !== studentId.toString()) {
-            return res.status(403).json({
-                success: false,
-                message: "Unauthorized to delete this discussion"
-            });
-        }
-
         discussion.isActive = false;  // Soft delete
         await discussion.save();
 
         return res.status(200).json({
             success: true,
-            message: "Discussion deleted successfully",
-            token: req.token
+            message: "Discussion deleted successfully"
         });
     } catch (error) {
         console.error("Error deleting discussion:", error);
