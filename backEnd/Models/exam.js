@@ -308,7 +308,7 @@ ExamSchema.statics.updateExamStatuses = async function() {
 };
 
 // Create the model
-const Exam = mongoose.model('exams', ExamSchema, 'Exams');
+const Exam = mongoose.model('Exams', ExamSchema, 'Exams');
 
 // Initialize status updates
 const startStatusUpdates = async () => {

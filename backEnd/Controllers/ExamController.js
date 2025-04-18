@@ -3,6 +3,7 @@ const Question = require("../Models/question");
 const Response = require("../Models/result");
 const User = require("../Models/user");
 
+
 exports.createExam = async (req, res) => {
     try {
         const examData = {
@@ -214,84 +215,24 @@ exports.getStudentExamResponses = async (req, res) => {
 
 // ... existing code ...
 
-// exports.getUserExams = async (req, res) => {
-//     try {
-//         const { userId } = req.params;
-
-//         const exams = await Exam.find({ createdBy: userId })
-//             .sort('-createdAt')
-//             .select('examName subject startDate endDate duration totalMarks numberOfQuestions passingMarks isActive status');
-
-//         if (!exams || exams.length === 0) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: "No exams found for this user"
-//             });
-//         }
-
-//         return res.status(200).json({
-//             success: true,
-//             message: "User's exams fetched successfully",
-//             data: exams,
-//             token: req.token
-//         });
-//     } catch (error) {
-//         console.error("Error fetching user's exams:", error);
-//         return res.status(500).json({
-//             success: false,
-//             message: "Failed to fetch user's exams",
-//             error: error.message
-//         });
-//     }
-// };
 exports.getUserExams = async (req, res) => {
     try {
         const { userId } = req.params;
-        
-        // First get the user to check their role
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
-        }
 
-        let exams;
-        if (user.role === 'creator') {
-            // For creators: get exams they created
-            exams = await Exam.find({ createdBy: userId })
-                .sort('-createdAt')
-                .select('examName subject startDate endDate duration totalMarks numberOfQuestions passingMarks isActive status');
-        } else {
-            // For students: get exams they've taken
-            const responses = await Response.find({ userId })
-                .populate({
-                    path: 'examId',
-                    select: 'examName subject startDate endDate duration totalMarks numberOfQuestions passingMarks isActive status'
-                })
-                .sort('-submittedAt');
-
-            exams = responses.map(response => ({
-                ...response.examId.toObject(),
-                score: response.score,
-                submittedAt: response.submittedAt,
-                isPassed: response.isPassed,
-                totalAttempted: response.responses.length,
-                correctAnswers: response.responses.filter(r => r.isCorrect).length
-            }));
-        }
+        const exams = await Exam.find({ createdBy: userId })
+            .sort('-createdAt')
+            .select('examName subject startDate endDate duration totalMarks numberOfQuestions passingMarks isActive status');
 
         if (!exams || exams.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: `No exams found for this ${user.role}`
+                message: "No exams found for this user"
             });
         }
 
         return res.status(200).json({
             success: true,
-            message: `${user.role}'s exams fetched successfully`,
+            message: "User's exams fetched successfully",
             data: exams,
             token: req.token
         });
@@ -304,3 +245,68 @@ exports.getUserExams = async (req, res) => {
         });
     }
 };
+// exports.getUserExams = async (req, res) => {
+//     try {
+//         const { userId } = req.params;
+        
+//         const user = await User.findById(userId);
+//         if (!user) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "User not found"
+//             });
+//         }
+
+//         let exams = [];
+//         if (user.role === 'creator') {
+//             exams = await Exam.find({ createdBy: userId })
+//                 .sort('-createdAt')
+//                 .select('examName subject startDate endDate duration totalMarks numberOfQuestions passingMarks isActive status');
+//         } else if (user.role === 'student') {
+//             // Get all published exams
+//             const allExams = await Exam.find({ status: 'published' })
+//                 .sort('-createdAt')
+//                 .select('examName subject startDate endDate duration totalMarks numberOfQuestions passingMarks isActive status');
+
+//             // Get student's responses
+//             const responses = await Response.find({ userId })
+//                 .populate({
+//                     path: 'examId',
+//                     select: 'examName subject startDate endDate duration totalMarks numberOfQuestions passingMarks isActive status'
+//                 });
+
+//             // Map responses to a lookup object
+//             const responseMap = new Map(
+//                 responses.map(response => [response.examId._id.toString(), response])
+//             );
+
+//             // Combine exam data with response data if available
+//             exams = allExams.map(exam => {
+//                 const response = responseMap.get(exam._id.toString());
+//                 return {
+//                     ...exam.toObject(),
+//                     attempted: !!response,
+//                     score: response ? response.score : null,
+//                     submittedAt: response ? response.submittedAt : null,
+//                     isPassed: response ? response.isPassed : null,
+//                     totalAttempted: response ? response.responses.length : null,
+//                     correctAnswers: response ? response.responses.filter(r => r.isCorrect).length : null
+//                 };
+//             });
+//         }
+
+//         return res.status(200).json({
+//             success: true,
+//             message: `${user.role}'s exams fetched successfully`,
+//             data: exams,
+//             token: req.token
+//         });
+//     } catch (error) {
+//         console.error("Error fetching user's exams:", error);
+//         return res.status(500).json({
+//             success: false,
+//             message: "Failed to fetch user's exams",
+//             error: error.message
+//         });
+//     }
+// };
