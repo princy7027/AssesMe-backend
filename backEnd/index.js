@@ -16,6 +16,10 @@ const QuestionRouter = require('./Routers/Question');
 const Discussion = require('./Routers/Discussion'); 
 const aiQuestionRouter = require('./Routers/AIQuestion');
 const ResultRouter = require('./Routers/Result');
+// ... existing imports ...
+const AdminRouter = require('./Routers/AdminRouter');
+
+
 dotenv.config();
 
 const app = express();
@@ -57,11 +61,10 @@ app.use('/user', UserRouter);
 app.use('/auth', AuthRouter);
 app.use('/question', QuestionRouter);
 app.use('/exam', ExamRouter);
-// app.use('/student', StudentRouter);
 app.use('/discussion', Discussion);
 app.use('/ai-question', aiQuestionRouter);
 app.use('/result', ResultRouter);
-
+app.use('/admin', AdminRouter);
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
