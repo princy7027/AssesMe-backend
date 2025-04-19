@@ -9,7 +9,7 @@ const DiscussionSchema = new Schema({
     },
     studentId: {
         type: Schema.Types.ObjectId,
-        ref: "User",  // Changed from "Student" to "User"
+        ref: "users",  // Changed from "Student" to "User"
         required: true
     },
     text: {
