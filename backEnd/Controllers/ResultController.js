@@ -29,7 +29,7 @@ exports.calculateResult = async (req, res) => {
         .populate({
             path: 'userId',
             select: 'name',
-            model: 'User'
+            model: 'users'
         })
             .select('obtainedMarks percentage userId');
             
