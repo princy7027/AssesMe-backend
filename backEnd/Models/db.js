@@ -8,15 +8,19 @@ async function connectDB() {
         await mongoose.connect(mongoURI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 30000, // Increased timeout
-            socketTimeoutMS: 45000,
+            serverSelectionTimeoutMS: 60000, // Increased timeout further
+            socketTimeoutMS: 60000, // Increased socket timeout
+            connectTimeoutMS: 60000, // Added connect timeout
             retryWrites: true,
             w: 'majority',
-            family: 4 // Force IPv4
+            family: 4, // Force IPv4
+            maxPoolSize: 10, // Added connection pool size
+            keepAlive: true, // Keep connection alive
+            keepAliveInitialDelay: 300000 // 5 minutes
         });
         console.log("MongoDB Atlas connected successfully!");
     } catch (err) {
-        console.error("MongoDB Atlas connection error:", err);
+        console.error("MongoDB Atlas connection error:", err.message);
         process.exit(1);
     }
 }
