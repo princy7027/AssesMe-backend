@@ -50,11 +50,11 @@ const signup = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-        const { email, password, role } = req.body;  // Added role to destructuring
+        const { email, password, role } = req.body;
         const existingUser = await UserModel.findOne({ email });
 
         if (!existingUser) {
-            return res.status(404).json({ message: "User not found, please sign up first.", success: false });
+            return res.status(404).json({ message: "User not found please sign up first.", success: false });
         }
 
         const isPasswordValid = await bcrypt.compare(password, existingUser.password);
@@ -62,10 +62,19 @@ const login = async (req, res) => {
             return res.status(401).json({ message: "Incorrect password!", success: false });
         }
 
-        // Update role in database if provided
-        if (role && ['creator', 'student'].includes(role)) {
+        // Handle admin login
+        if (role === 'admin') {
+            if (existingUser.role !== 'admin') {
+                return res.status(403).json({ 
+                    message: "Access denied. You are not an admin.", 
+                    success: false 
+                });
+            }
+        } 
+        // Handle creator/student role update
+        else if (role && ['creator', 'student'].includes(role)) {
             await UserModel.findByIdAndUpdate(existingUser._id, { role: role });
-            existingUser.role = role;  // Update local object for token generation
+            existingUser.role = role;
         }
 
         const token = jwt.sign(
@@ -95,4 +104,5 @@ const login = async (req, res) => {
         res.status(500).json({ message: "Internal server error", success: false });
     }
 };
+
 module.exports = { signup, login };
