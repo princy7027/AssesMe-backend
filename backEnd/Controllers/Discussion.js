@@ -4,7 +4,7 @@ const Exam = require("../Models/exam");
 exports.createDiscussion = async (req, res) => {
     try {
         const { examId, text } = req.body;
-        const studentId = req.user._id;  // Get studentId from authenticated user
+        const studentId = req.user._id; 
 
         const exam = await Exam.findById(examId);
         if (!exam) {

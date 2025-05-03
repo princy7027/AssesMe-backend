@@ -1,29 +1,23 @@
-const express = require('express');
-const http = require('http');
+const express = require('express'); // using express js 
+const http = require('http'); 
 const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const socketIo = require('socket.io');
-
-
-
+const cors = require('cors'); //use for the different domain like gemini ai and calling from the local domain 
+const dotenv = require('dotenv');//env file me se enviroment variable load here 
+const socketIo = require('socket.io'); // real-time communication
 
 const UserRouter = require('./Routers/UserRouter');
 const AuthRouter = require('./Routers/AuthRouter');
 const ExamRouter = require('./Routers/ExamRoutes');
 const QuestionRouter = require('./Routers/Question');
-// const StudentRouter = require('./Routers/StudentAnswer');
 const Discussion = require('./Routers/Discussion'); 
 const aiQuestionRouter = require('./Routers/AIQuestion');
 const ResultRouter = require('./Routers/Result');
-// ... existing imports ...
 const AdminRouter = require('./Routers/AdminRouter');
-
 
 dotenv.config();
 
 const app = express();
-const server = http.createServer(app);
+const server = http.createServer(app); //created our own http server 
 const io = socketIo(server, { cors: { origin: '*' } });
 
 const PORT = process.env.PORT || 8080;
@@ -57,7 +51,7 @@ app.get('/p', (req, res) => {
     res.send('HI Kalyani Dave');
 });
 
-app.use('/user', UserRouter);
+app.use('/user', UserRouter); //if my url starts with this /user then redirect to usercontoller right 
 app.use('/auth', AuthRouter);
 app.use('/question', QuestionRouter);
 app.use('/exam', ExamRouter);
@@ -98,12 +92,9 @@ io.on('connection', (socket) => {
     });
 });
 
-// ... existing code ...
-
-// Modified server startup
 connectDB().then(() => {
     try {
-        server.listen(PORT, () => {
+        server.listen(PORT, () => { //now you hve strtlistening all req on this port 
             console.log(`Server is Running on PORT ${PORT}`);
         }).on('error', (error) => {
             console.error('Server startup error:', error);

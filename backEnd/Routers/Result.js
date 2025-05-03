@@ -11,8 +11,8 @@ const auth = require('../middlewares/Auth');
 
 router.post('/submit/:examId/:userId', auth, calculateResult);
 router.get('/exam/:examId', auth, getExamResults);
-router.get('/student/:userId', auth, getStudentResults);
-router.delete('/:resultId', auth, deleteResult);  // Fixed: removed redundant 'delete' from path
-router.get('/:examId', auth, getExamStatisticsForCreator);  // Fixed: removed redundant 'delete' from path
+router.get('/student/:userId/:examId', auth, getStudentResults);
+router.delete('/:resultId', auth, deleteResult);  
+router.get('/:examId', auth, getExamStatisticsForCreator);  
 
 module.exports = router;

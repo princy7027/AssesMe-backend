@@ -293,37 +293,87 @@ exports.getExamStatisticsForCreator = async (req, res) => {
         });
     }
 };
+// exports.getStudentResults = async (req, res) => {
+//     try {
+//         const { userId } = req.params;
+
+//         const results = await Result.find({ userId })
+//             .populate('examId', 'examName subject totalMarks passingMarks')
+//             .sort('-createdAt');
+
+//         if (!results || results.length === 0) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "No results found for this student"
+//             });
+//         }
+
+//         return res.status(200).json({
+//             success: true,
+//             message: "Results fetched successfully",
+//             data: results,
+//             token: req.token
+//         });
+//     } catch (error) {
+//         console.error("Error fetching student results:", error);
+//         return res.status(500).json({
+//             success: false,
+//             message: "Failed to fetch student results",
+//             error: error.message
+//         });
+//     }
+// };
 exports.getStudentResults = async (req, res) => {
     try {
-        const { userId } = req.params;
+        const { userId, examId } = req.params;
 
-        const results = await Result.find({ userId })
-            .populate('examId', 'examName subject totalMarks passingMarks')
+        const result = await Result.findOne({ userId, examId })
+            .populate('examId', 'examName subject totalMarks passingMarks duration numberOfQuestions')
+            .populate('userId', 'name')
             .sort('-createdAt');
 
-        if (!results || results.length === 0) {
+        if (!result) {
             return res.status(404).json({
                 success: false,
-                message: "No results found for this student"
+                message: "No result found for this student in this exam"
             });
         }
 
+        const formattedResult = {
+            examDetails: {
+                examId: result.examId._id,
+                examName: result.examId.examName,
+                subject: result.examId.subject,
+                totalMarks: result.examId.totalMarks,
+                passingMarks: result.examId.passingMarks,
+                duration: result.examId.duration,
+                numberOfQuestions: result.examId.numberOfQuestions
+            },
+            resultDetails: {
+                submittedAt: result.submittedAt,
+                obtainedMarks: result.obtainedMarks,
+                percentage: result.percentage,
+                isPassed: result.isPassed,
+                strongAreas: result.strongAreas,
+                weakAreas: result.weakAreas
+            }
+        };
+
         return res.status(200).json({
             success: true,
-            message: "Results fetched successfully",
-            data: results,
+            message: "Result fetched successfully",
+            data: formattedResult,
             token: req.token
         });
     } catch (error) {
-        console.error("Error fetching student results:", error);
+        console.error("Error fetching student result:", error);
         return res.status(500).json({
             success: false,
-            message: "Failed to fetch student results",
+            message: "Failed to fetch student result",
             error: error.message
         });
     }
 };
-
 exports.getStudentExamResult = async (req, res) => {
     try {
         const { examId, userId } = req.params;
