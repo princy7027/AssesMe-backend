@@ -1,11 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const { generateAndSaveQuestions } = require('../Controllers/AIQuestionController');
+const AIQuestionController = require('../Controllers/AIQuestionController');
 const auth = require('../middlewares/Auth');
 
+// Add express.json() middleware
 router.use(express.json());
 
-// Fix: Change to generateAndSaveQuestions instead of generate
-router.post('/generate', auth, generateAndSaveQuestions);
+// Define routes
+router.post('/generate-ai', auth, (req, res) => {
+    AIQuestionController.generateQuestionsWithAI(req, res);
+});
+
+router.post('/generate', auth, (req, res) => {
+    AIQuestionController.generateAndSaveQuestions(req, res);
+});
 
 module.exports = router;

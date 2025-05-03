@@ -1,72 +1,64 @@
-const mongoose = require('mongoose');
-
-const parseAIResponse = (rawResponse) => {
+const parseAIResponse = (rawResponse, topic) => {
     try {
-        if (!rawResponse?.candidates?.[0]?.content?.parts?.[0]?.text) {
+        const text = rawResponse?.candidates?.[0]?.content?.parts?.[0]?.text;
+        console.log("Raw text received:", text);
+
+        if (!text) {
             throw new Error("Invalid response structure");
         }
 
-        const text = rawResponse.candidates[0].content.parts[0].text;
-        const cleanText = text.replace(/```json\n|\n```/g, '');
+        const questions = [];
+        const questionBlocks = text.split(/Question \d+:/).filter(block => block.trim());
         
-        try {
-            const parsedData = JSON.parse(cleanText);
-            if (!Array.isArray(parsedData)) {
-                throw new Error("Response data is not an array");
-            }
-
-            const questions = parsedData.map((item, index) => {
-                if (!item.questionData || !Array.isArray(item.questionData) || !item.questionData[0]) {
-                    throw new Error(`Invalid question structure at index ${index}`);
-                }
-
-                const question = item.questionData[0];
-                
-                // Extract option texts from complex option objects
-                const options = question.options.map(opt => 
-                    typeof opt === 'string' ? opt : opt.optionText
-                );
-
-                // Extract correct answer
-                const correctAnswer = typeof question.correctAnswer === 'string' ? 
-                    question.correctAnswer : 
-                    options.find((_, idx) => question.options[idx].isCorrect);
-
-                return {
-                    questionNumber: question.questionNumber || index + 1,
-                    questionText: question.questionText.trim(),
-                    questionTopic: question.questionTopic.trim(),
-                    queType: question.queType,
-                    options: options,
-                    correctAnswer: correctAnswer
-                };
-            });
-
-            // Validate questions
-            questions.forEach(question => {
-                if (!Array.isArray(question.options) || question.options.length !== 4) {
-                    throw new Error(`Question "${question.questionText}" must have exactly 4 options`);
-                }
-                if (!question.correctAnswer) {
-                    throw new Error(`Question "${question.questionText}" must have a correct answer`);
-                }
-            });
-
-            return {
-                success: true,
-                data: questions
+        questionBlocks.forEach((block, index) => {
+            const lines = block.split('\n').filter(line => line.trim());
+            
+            const currentQuestion = {
+                questionNumber: index + 1,
+                questionText: lines[0].trim(),
+                questionTopic: topic, // Use the provided topic
+                queType: "MCQ",
+                options: [],
+                correctAnswer: ''
             };
 
-        } catch (jsonError) {
-            throw new Error(`JSON parsing error: ${jsonError.message}`);
+            // Rest of the parsing logic remains the same
+            lines.forEach(line => {
+                const optionMatch = line.match(/^([a-d])\)(.*)/);
+                if (optionMatch) {
+                    const optionText = optionMatch[2].trim();
+                    currentQuestion.options.push(optionText);
+                    
+                    if (optionText.includes('(Correct)')) {
+                        currentQuestion.correctAnswer = optionText.replace('(Correct)', '').trim();
+                    }
+                }
+            });
+
+            if (currentQuestion.options.length >= 2 && currentQuestion.correctAnswer) {
+                currentQuestion.options = currentQuestion.options.map(opt => 
+                    opt.replace('(Correct)', '').trim()
+                );
+                questions.push(currentQuestion);
+            }
+        });
+
+        if (questions.length === 0) {
+            throw new Error("No valid questions found in the response");
         }
+
+        return {
+            success: true,
+            data: {
+                questionData: questions
+            }
+        };
 
     } catch (error) {
         console.error("Parsing error:", error);
         return {
             success: false,
-            error: 'Failed to parse AI response',
-            details: error.message
+            error: error.message
         };
     }
 };

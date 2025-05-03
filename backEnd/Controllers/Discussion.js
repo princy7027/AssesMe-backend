@@ -44,6 +44,7 @@ exports.getDiscussionsByExam = async (req, res) => {
 
         const discussions = await Discussion.find({ examId, isActive: true })
             .populate("studentId", "name email")
+            .populate("examId", "examName") 
             .sort({ createdAt: -1 });
 
         return res.status(200).json({

@@ -385,6 +385,76 @@ exports.getUserExams = async (req, res) => {
 // };
 
 
+// exports.getStudentExamsWithResults = async (req, res) => {
+//     try {
+//         const studentId = req.params.studentId;
+
+//         const student = await User.findOne({ _id: studentId, role: 'student' });
+//         if (!student) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "Student not found"
+//             });
+//         }
+
+//         const examResponses = await Response.find({ userId: studentId })
+//             .populate({
+//                 path: 'examId',
+//                 select: 'examName subject startDate endDate duration totalMarks numberOfQuestions passingMarks'
+//             })
+//             .sort('-submittedAt');
+
+//         const examResults = examResponses.map(response => {
+//             const totalAttempted = response.responses?.length || 0;
+//             const correctAnswers = response.responses?.filter(r => r.isCorrect).length || 0;
+//             const wrongAnswers = response.responses?.filter(r => !r.isCorrect).length || 0;
+//             const totalMarks = response.examId?.totalMarks || 0;
+            
+//             // Calculate score based on correct answers if score is 0
+//             const score = response.score || (correctAnswers * (totalMarks / response.examId?.numberOfQuestions));
+
+//             return {
+//                 examDetails: {
+//                     examId: response.examId?._id,
+//                     examName: response.examId?.examName,
+//                     subject: response.examId?.subject,
+//                     totalMarks: response.examId?.totalMarks,
+//                     passingMarks: response.examId?.passingMarks,
+//                     duration: response.examId?.duration,
+//                     numberOfQuestions: response.examId?.numberOfQuestions
+//                 },
+//                 resultDetails: {
+//                     submittedAt: response.submittedAt,
+//                     score: score,
+//                     isPassed: response.isPassed,
+//                     totalAttempted,
+//                     correctAnswers,
+//                     wrongAnswers,
+//                     percentage: totalMarks > 0 ? ((score / totalMarks) * 100).toFixed(2) : "0.00"
+//                 }
+//             };
+//         });
+
+//         return res.status(200).json({
+//             success: true,
+//             message: "Student's exam results fetched successfully",
+//             data: {
+//                 studentName: student.name,
+//                 totalExamsAttempted: examResults.length,
+//                 examResults
+//             },
+//             token: req.token
+//         });
+
+//     } catch (error) {
+//         console.error("Error fetching student's exam results:", error);
+//         return res.status(500).json({
+//             success: false,
+//             message: "Failed to fetch student's exam results",
+//             error: error.message
+//         });
+//     }
+// };
 exports.getStudentExamsWithResults = async (req, res) => {
     try {
         const studentId = req.params.studentId;
@@ -404,33 +474,25 @@ exports.getStudentExamsWithResults = async (req, res) => {
             })
             .sort('-submittedAt');
 
-        const examResults = examResponses.map(response => {
-            const totalAttempted = response.responses?.length || 0;
-            const correctAnswers = response.responses?.filter(r => r.isCorrect).length || 0;
-            const wrongAnswers = response.responses?.filter(r => !r.isCorrect).length || 0;
-            const totalMarks = response.examId?.totalMarks || 1;
-
-            return {
-                examDetails: {
-                    examId: response.examId?._id,
-                    examName: response.examId?.examName,
-                    subject: response.examId?.subject,
-                    totalMarks: response.examId?.totalMarks,
-                    passingMarks: response.examId?.passingMarks,
-                    duration: response.examId?.duration,
-                    numberOfQuestions: response.examId?.numberOfQuestions
-                },
-                resultDetails: {
-                    submittedAt: response.submittedAt,
-                    score: response.score,
-                    isPassed: response.isPassed,
-                    totalAttempted,
-                    correctAnswers,
-                    wrongAnswers,
-                    percentage: ((response.score / totalMarks) * 100).toFixed(2)
-                }
-            };
-        });
+        const examResults = examResponses.map(response => ({
+            examDetails: {
+                examId: response.examId?._id,
+                examName: response.examId?.examName,
+                subject: response.examId?.subject,
+                totalMarks: response.examId?.totalMarks,
+                passingMarks: response.examId?.passingMarks,
+                duration: response.examId?.duration,
+                numberOfQuestions: response.examId?.numberOfQuestions
+            },
+            resultDetails: {
+                submittedAt: response.submittedAt,
+                isPassed: response.isPassed,
+                totalAttempted: response.totalAttempted,
+                correctAnswers: response.correctAnswers,
+                wrongAnswers: response.wrongAnswers,
+                percentage: response.percentage
+            }
+        }));
 
         return res.status(200).json({
             success: true,

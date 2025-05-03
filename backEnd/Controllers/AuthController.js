@@ -50,7 +50,7 @@ const signup = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, role } = req.body;  // Added role to destructuring
         const existingUser = await UserModel.findOne({ email });
 
         if (!existingUser) {
@@ -60,6 +60,12 @@ const login = async (req, res) => {
         const isPasswordValid = await bcrypt.compare(password, existingUser.password);
         if (!isPasswordValid) {
             return res.status(401).json({ message: "Incorrect password!", success: false });
+        }
+
+        // Update role in database if provided
+        if (role && ['creator', 'student'].includes(role)) {
+            await UserModel.findByIdAndUpdate(existingUser._id, { role: role });
+            existingUser.role = role;  // Update local object for token generation
         }
 
         const token = jwt.sign(
@@ -89,6 +95,4 @@ const login = async (req, res) => {
         res.status(500).json({ message: "Internal server error", success: false });
     }
 };
-
-
 module.exports = { signup, login };
