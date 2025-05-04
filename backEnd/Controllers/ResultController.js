@@ -169,61 +169,10 @@ exports.getExamResults = async (req, res) => {
     }
 };
 
-// exports.getExamStatisticsForCreator = async (req, res) => {
-//     try {
-//         const { examId } = req.params;
-
-//         const exam = await Exam.findById(examId);
-//         if (!exam) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: "Exam not found"
-//             });
-//         }
-
-//         const results = await Result.find({ examId })
-//             .populate({
-//                 path: 'userId',
-//                 select: 'name',
-//                 model: 'User'
-//             })
-//             .select('obtainedMarks percentage userId');
-
-//         const studentsPerformance = results.map(result => ({
-//             studentName: result.userId.name,
-//             marks: result.obtainedMarks,
-//             percentage: result.percentage
-//         }));
-
-//         return res.status(200).json({
-//             success: true,
-//             message: "Exam statistics fetched successfully",
-//             data: {
-//                 examDetails: {
-//                     examName: exam.examName,
-//                     subject: exam.subject,
-//                     totalMarks: exam.totalMarks,
-//                     passingMarks: exam.passingMarks
-//                 },
-//                 studentsPerformance
-//             }
-//         });
-
-//     } catch (error) {
-//         console.error("Error fetching exam statistics:", error);
-//         return res.status(500).json({
-//             success: false,
-//             message: "Failed to fetch exam statistics",
-//             error: error.message
-//         });
-//     }
-// };
 
 exports.getExamStatisticsForCreator = async (req, res) => {
     try {
         const { examId } = req.params;
-
-        // First verify if exam exists
         const exam = await Exam.findById(examId);
         if (!exam) {
             return res.status(404).json({
@@ -231,8 +180,6 @@ exports.getExamStatisticsForCreator = async (req, res) => {
                 message: "Exam not found"
             });
         }
-
-        // Get all results for this exam with student details
         const results = await Result.find({ examId })
             .populate({
                 path: 'userId',
@@ -240,8 +187,6 @@ exports.getExamStatisticsForCreator = async (req, res) => {
                 model: 'users'
             })
             .select('obtainedMarks percentage userId submittedAt');
-
-        // Calculate exam statistics
         const examStatistics = {
             examDetails: {
                 examName: exam.examName,

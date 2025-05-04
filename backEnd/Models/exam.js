@@ -228,7 +228,6 @@ ExamSchema.pre('save', function(next) {
     next();
 });
 
-// Virtual for creator information
 ExamSchema.virtual('creator', {
     ref: 'users',
     localField: 'createdBy',
@@ -236,10 +235,6 @@ ExamSchema.virtual('creator', {
     justOne: true
 });
 
-// Virtual for exam status
-// ... existing schema fields ...
-
-// Change the virtual name from 'status' to 'examStatus'
 ExamSchema.virtual('examStatus').get(function() {
     const currentDate = new Date();
     const isInTimeWindow = currentDate >= this.startDate && currentDate <= this.endDate;
@@ -255,18 +250,18 @@ ExamSchema.virtual('examStatus').get(function() {
     };
 });
 
-// ... rest of your code
+
 
 ExamSchema.statics.getAllExams = async function() {
     try {
         return await this.find()
             .populate({
                 path: 'createdBy',
-                select: 'name' // Only selecting name field
+                select: 'name' 
             })
             .populate({
                 path: 'editedBy',
-                select: 'name' // Only selecting name field
+                select: 'name' 
             })
             .sort({ createdAt: -1 });
     } catch (error) {
@@ -274,7 +269,6 @@ ExamSchema.statics.getAllExams = async function() {
         throw error;
     }
 };
-// Status update method
 ExamSchema.statics.updateExamStatuses = async function() {
     const currentDate = new Date();
     try {
@@ -307,10 +301,8 @@ ExamSchema.statics.updateExamStatuses = async function() {
     }
 };
 
-// Create the model
 const Exam = mongoose.model('Exams', ExamSchema, 'Exams');
 
-// Initialize status updates
 const startStatusUpdates = async () => {
     try {
         await Exam.updateExamStatuses();
@@ -320,13 +312,13 @@ const startStatusUpdates = async () => {
             } catch (error) {
                 console.error('Status update failed:', error.message);
             }
-        }, 300000); // 5 minutes
+        }, 300000); 
     } catch (error) {
         console.error('Initial status update failed:', error.message);
     }
 };
 
-// Start updates when database connects
+
 mongoose.connection.once('connected', () => {
     startStatusUpdates();
 });

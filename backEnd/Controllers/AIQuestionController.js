@@ -19,7 +19,9 @@ const AIQuestionController = {
             const prompt = {
                 contents: [{
                     parts: [{
-                        text: `Create ${numberOfQuestions} questions about ${topic} with multiple choice answers. Make sure questions are related to ${topic} concepts and knowledge. Format each question exactly like this: Question 1: [Write the question here]a) [option]b) [option]c) [option]d) [option]Add (Correct) after the right answer.Leave one blank line between questions.`
+                        text: `Create ${numberOfQuestions} questions about ${topic} with multiple choice answers. Make sure questions are related to ${topic}
+                        concepts and knowledge. Format each question exactly like this: Question 1: [Write the question here]a) [option]b) [option]c) [option]d) [option]Add (Correct) 
+                        after the right answer.Leave one blank line between questions.`
                     }]
                 }]
             };

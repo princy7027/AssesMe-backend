@@ -47,7 +47,6 @@ const signup = async (req, res) => {
         });
     }
 };
-
 const login = async (req, res) => {
     try {
         const { email, password, role } = req.body;
@@ -62,16 +61,21 @@ const login = async (req, res) => {
             return res.status(401).json({ message: "Incorrect password!", success: false });
         }
 
-        // Handle admin login
-        if (role === 'admin') {
-            if (existingUser.role !== 'admin') {
-                return res.status(403).json({ 
-                    message: "Access denied. You are not an admin.", 
-                    success: false 
+        if (existingUser.role === 'admin') {
+            if (role && role !== 'admin') {
+                return res.status(403).json({
+                    message: "Admin role cannot be changed.",
+                    success: false
                 });
             }
-        } 
-        // Handle creator/student role update
+        }
+        
+        else if (role === 'admin') {
+            return res.status(403).json({
+                message: "Cannot change to admin role.",
+                success: false
+            });
+        }
         else if (role && ['creator', 'student'].includes(role)) {
             await UserModel.findByIdAndUpdate(existingUser._id, { role: role });
             existingUser.role = role;
@@ -104,5 +108,4 @@ const login = async (req, res) => {
         res.status(500).json({ message: "Internal server error", success: false });
     }
 };
-
 module.exports = { signup, login };

@@ -47,11 +47,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/p', (req, res) => {
+app.get('/', (req, res) => {
     res.send('HI Kalyani Dave');
 });
 
-app.use('/user', UserRouter); //if my url starts with this /user then redirect to usercontoller right 
+app.use('/user', UserRouter);
 app.use('/auth', AuthRouter);
 app.use('/question', QuestionRouter);
 app.use('/exam', ExamRouter);

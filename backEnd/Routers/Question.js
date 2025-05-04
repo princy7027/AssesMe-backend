@@ -8,7 +8,7 @@ const auth = require('../middlewares/Auth');
 const express = require('express');
 const router = express.Router();
 
-// Add express.json() middleware for parsing JSON bodies
+
 router.use(express.json());
 
 router

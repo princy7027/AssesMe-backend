@@ -20,7 +20,6 @@ const getAllUsers = async (req, res) => {
 
 const getUserById = async (req, res) => {
     try {
-        // Validate ObjectId
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
             return res.status(400).json({
                 success: false,
@@ -50,7 +49,6 @@ const getUserById = async (req, res) => {
 
 const updateUser = async (req, res) => {
     try {
-        // Add ObjectId validation
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
             return res.status(400).json({
                 success: false,
@@ -60,7 +58,6 @@ const updateUser = async (req, res) => {
 
         const { name, email, role } = req.body;
         
-        // Validate required fields
         if (!name || !email || !role) {
             return res.status(400).json({
                 success: false,
@@ -87,7 +84,7 @@ const updateUser = async (req, res) => {
             user
         });
     } catch (error) {
-        console.error('Update error:', error); // Add this for debugging
+        console.error('Update error:', error); 
         res.status(500).json({
             success: false,
             message: "Failed to update user",

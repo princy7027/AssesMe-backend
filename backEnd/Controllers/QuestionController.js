@@ -14,7 +14,6 @@ exports.createQuestions = async (req, res) => {
             });
         }
 
-        // Format question data
         const formattedQuestionData = questionData.map(q => ({
             questionText: q.questionText,
             questionTopic: q.questionTopic,
@@ -99,7 +98,6 @@ exports.updateQuestion = async (req, res) => {
             });
         }
 
-        // Update question with new data
         questions.questionData[questionIndex] = {
             ...questions.questionData[questionIndex],
             questionText: questionText || questions.questionData[questionIndex].questionText,
@@ -141,12 +139,10 @@ exports.deleteQuestion = async (req, res) => {
             });
         }
 
-        // Remove the question
         questions.questionData = questions.questionData.filter(
             q => q.questionNumber !== questionNumber
         );
 
-        // Renumber remaining questions
         questions.questionData.forEach((q, index) => {
             q.questionNumber = index + 1;
         });

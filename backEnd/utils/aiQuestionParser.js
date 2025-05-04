@@ -16,13 +16,13 @@ const parseAIResponse = (rawResponse, topic) => {
             const currentQuestion = {
                 questionNumber: index + 1,
                 questionText: lines[0].trim(),
-                questionTopic: topic, // Use the provided topic
+                questionTopic: topic, 
                 queType: "MCQ",
                 options: [],
                 correctAnswer: ''
             };
 
-            // Rest of the parsing logic remains the same
+            
             lines.forEach(line => {
                 const optionMatch = line.match(/^([a-d])\)(.*)/);
                 if (optionMatch) {

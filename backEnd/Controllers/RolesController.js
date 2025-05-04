@@ -1,6 +1,4 @@
 const { roleSchema } = require("../Models/Roles");
-//from frontend we'll call this api where rolename will be passed in req bdy from there fetch name here 
-// and see which rights have to particular user
 exports.fetchRoleByName = async(req,res)=>{
     try {
         const roleName = req.body;
@@ -13,7 +11,7 @@ exports.fetchRoleByName = async(req,res)=>{
             })
         }
         if(role){
-            return //here return role right 
+            return 
         }
     } catch (error) {
         return res.status.json({

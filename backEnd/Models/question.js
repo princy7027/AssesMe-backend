@@ -48,23 +48,19 @@ const QuestionSchema = new Schema({
     timestamps: true
 });
 
-// Pre-save middleware for validation and question numbering
 QuestionSchema.pre('save', function(next) {
     try {
-        // Number questions sequentially
         if (this.questionData && this.questionData.length > 0) {
             this.questionData.forEach((question, index) => {
                 question.questionNumber = index + 1;
             });
         }
 
-        // Validate questions
         this.questionData.forEach(question => {
             if (question.queType === 'MCQ') {
                 if (!question.options || question.options.length < 2) {
                     throw new Error('MCQ questions must have at least 2 options');
                 }
-                // Ensure correctAnswer is one of the options
                 if (!question.options.includes(question.correctAnswer)) {
                     throw new Error('Correct answer must be one of the options for MCQ');
                 }
@@ -76,7 +72,6 @@ QuestionSchema.pre('save', function(next) {
     }
 });
 
-// Add index for better query performance
 QuestionSchema.index({ examId: 1 });
 QuestionSchema.index({ 'questionData.questionNumber': 1 });
 

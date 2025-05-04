@@ -9,7 +9,7 @@ const DiscussionSchema = new Schema({
     },
     studentId: {
         type: Schema.Types.ObjectId,
-        ref: "users",  // Changed from "Student" to "User"
+        ref: "users",  
         required: true
     },
     text: {
@@ -26,7 +26,7 @@ const DiscussionSchema = new Schema({
         default: true
     }
 }, {
-    timestamps: true  // This will add updatedAt field automatically
+    timestamps: true 
 });
 
 const Discussion = mongoose.model("Discussion", DiscussionSchema);
