@@ -3,11 +3,23 @@ const Question = require("../Models/question");
 const Response = require("../Models/result");
 const User = require("../Models/user");
 
-
 exports.createExam = async (req, res) => {
     try {
+        let startDateTime = req.body.startTime ? new Date(req.body.startTime) : new Date(req.body.startDate);
+        let endDateTime = req.body.endTime ? new Date(req.body.endTime) : new Date(req.body.endDate);
+
+        if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid date format",
+                error: "Please provide valid date and time values"
+            });
+        }
+
         const examData = {
             ...req.body,
+            startDate: startDateTime,
+            endDate: endDateTime,
             createdBy: req.user._id,
             createdAt: new Date(),
             status: 'draft'
@@ -31,7 +43,85 @@ exports.createExam = async (req, res) => {
         });
     }
 };
+// exports.createExam = async (req, res) => {
+//     try {
+//         const examData = {
+//             ...req.body,
+//             createdBy: req.user._id,
+//             createdAt: new Date(),
+//             status: 'draft'
+//         };
 
+//         const exam = new Exam(examData);
+//         await exam.save();
+
+//         return res.status(201).json({
+//             success: true,
+//             message: "Exam created successfully",
+//             data: exam,
+//             token: req.token
+//         });
+//     } catch (error) {
+//         console.error("Error creating exam:", error);
+//         return res.status(500).json({
+//             success: false,
+//             message: "Failed to create exam",
+//             error: error.message
+//         });
+//     }
+// };
+// exports.createExam = async (req, res) => {
+//     try {
+//         const { startDate, endDate } = req.body;
+        
+//         // Validate exam dates
+//         const today = new Date();
+//         today.setHours(0, 0, 0, 0);
+        
+//         const examStartDate = new Date(startDate);
+//         const examEndDate = new Date(endDate);
+
+//         // Check if exam dates are valid
+//         if (examStartDate < today) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "Exam cannot be scheduled for past dates"
+//             });
+//         }
+
+//         if (examEndDate < examStartDate) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "End date cannot be before start date"
+//             });
+//         }
+
+//         const examData = {
+//             ...req.body,
+//             createdBy: req.user._id,
+//             createdAt: new Date(),
+//             status: 'draft',
+//             isActive: examStartDate.getTime() === today.getTime() // Automatically activate if exam is for today
+//         };
+
+//         const exam = new Exam(examData);
+//         await exam.save();
+
+//         return res.status(201).json({
+//             success: true,
+//             message: "Exam created successfully",
+//             data: exam,
+//             token: req.token
+//         });
+//     } catch (error) {
+//         console.error("Error creating exam:", error);
+//         return res.status(500).json({
+//             success: false,
+//             message: "Failed to create exam",
+//             error: error.message
+//         });
+//     }
+// };
 exports.getAllExams = async (req, res) => {
     try {
         const exams = await Exam.getAllExams(); 

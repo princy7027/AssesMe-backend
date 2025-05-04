@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const DiscussionSchema = new Schema({
     examId: {
         type: Schema.Types.ObjectId,
-        ref: "Exam",
+        ref: "Exams",
         required: true
     },
     studentId: {

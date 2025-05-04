@@ -16,16 +16,33 @@ const AIQuestionController = {
                 });
             }
 
+            // const prompt = {
+            //     contents: [{
+            //         parts: [{
+            //             text: `Create ${numberOfQuestions} questions about ${topic} with multiple choice answers. Make sure questions are related to ${topic}
+            //             concepts and knowledge. Format each question exactly like this: Question 1: [Write the question here]a) [option]b) [option]c) [option]d) [option]Add (Correct) 
+            //             after the right answer.Leave one blank line between questions.`
+            //         }]
+            //     }]
+            // };
             const prompt = {
                 contents: [{
                     parts: [{
                         text: `Create ${numberOfQuestions} questions about ${topic} with multiple choice answers. Make sure questions are related to ${topic}
-                        concepts and knowledge. Format each question exactly like this: Question 1: [Write the question here]a) [option]b) [option]c) [option]d) [option]Add (Correct) 
-                        after the right answer.Leave one blank line between questions.`
+                        concepts and knowledge. Format each question exactly like this: 
+                        Topic: [Specific subtopic related to the question]
+                        Question 1: [Write the question here]
+                        a) [option]
+                        b) [option]
+                        c) [option]
+                        d) [option]
+                        Add (Correct) after the right answer.
+                        Leave one blank line between questions.
+                        
+                        Make sure each question has its own specific subtopic that accurately describes what concept the question is testing.`
                     }]
                 }]
             };
-
             const geminiResponse = await axios.post(
                 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAYglf4vywoUI4v_w-gRUp3wJcfukVsn88',
                 prompt,

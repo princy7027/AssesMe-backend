@@ -209,24 +209,55 @@ const ExamSchema = new Schema({
 // module.exports = Exam;
 
 // Pre-save validation
+// ExamSchema.pre('save', function(next) {
+//     const currentDate = new Date();
+    
+//     if (this.startDate >= this.endDate) {
+//         return next(new Error('End date must be after start date'));
+//     }
+    
+//     const examDurationInMinutes = (this.endDate - this.startDate) / (1000 * 60);
+//     if (examDurationInMinutes < this.duration) {
+//         return next(new Error('Exam time window must be greater than or equal to exam duration'));
+//     }
+    
+//     if (this.startDate < currentDate && this.isNew) {
+//         return next(new Error('Start date cannot be in the past for new exams'));
+//     }
+    
+//     next();
+// });
+
 ExamSchema.pre('save', function(next) {
     const currentDate = new Date();
+    const startDateTime = new Date(this.startDate);
+    const endDateTime = new Date(this.endDate);
     
-    if (this.startDate >= this.endDate) {
-        return next(new Error('End date must be after start date'));
+    // Only validate dates for new exams
+    if (this.isNew) {
+        // Allow same-day exams
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const examDate = new Date(startDateTime);
+        examDate.setHours(0, 0, 0, 0);
+
+        if (examDate < today) {
+            return next(new Error('Start date cannot be in the past'));
+        }
     }
     
-    const examDurationInMinutes = (this.endDate - this.startDate) / (1000 * 60);
+    if (endDateTime <= startDateTime) {
+        return next(new Error('End date/time must be after start date/time'));
+    }
+    
+    const examDurationInMinutes = (endDateTime - startDateTime) / (1000 * 60);
     if (examDurationInMinutes < this.duration) {
         return next(new Error('Exam time window must be greater than or equal to exam duration'));
     }
     
-    if (this.startDate < currentDate && this.isNew) {
-        return next(new Error('Start date cannot be in the past for new exams'));
-    }
-    
     next();
 });
+
 
 ExamSchema.virtual('creator', {
     ref: 'users',
