@@ -55,36 +55,73 @@ exports.calculateResult = async (req, res) => {
         const strongAreas = [];
         const weakAreas = [];
 
-
-        // ... existing code ...
-
-        questions.questionData.forEach((question) => {
-            const userResponse = responses.find(r => r.questionNumber === question.questionNumber);
-            if (userResponse) {
-                const isCorrect = userResponse.selectedAnswer.trim().toLowerCase() === 
-                                question.correctAnswer.trim().toLowerCase();
+        // questions.questionData.forEach((question) => {
+        //     const userResponse = responses.find(r => r.questionNumber === question.questionNumber);
+        //     if (userResponse) {
+        //         const isCorrect = userResponse.selectedAnswer.trim().toLowerCase() === 
+        //                         question.correctAnswer.trim().toLowerCase();
                 
-                if (isCorrect) {
-                    obtainedMarks += marksPerQuestion;
-                    strongAreas.push({
-                        questionText: question.questionText,
-                        questionTopic: question.questionTopic,
-                        questionNumber: question.questionNumber,
-                        queType: question.queType
-                    });
-                } else {
-                    weakAreas.push({
-                        questionText: question.questionText,
-                        questionTopic: question.questionTopic,
-                        questionNumber: question.questionNumber,
-                        queType: question.queType,
-                        correctAnswer: question.correctAnswer,
-                        userAnswer: userResponse.selectedAnswer
-                    });
-                }
-            }
-        });
+        //         if (isCorrect) {
+        //             obtainedMarks += marksPerQuestion;
+        //             strongAreas.push({
+        //                 questionText: question.questionText,
+        //                 questionTopic: question.questionTopic,
+        //                 questionNumber: question.questionNumber,
+        //                 queType: question.queType
+        //             });
+        //         } else {
+        //             weakAreas.push({
+        //                 questionText: question.questionText,
+        //                 questionTopic: question.questionTopic,
+        //                 questionNumber: question.questionNumber,
+        //                 queType: question.queType,
+        //                 correctAnswer: question.correctAnswer,
+        //                 userAnswer: userResponse.selectedAnswer
+        //             });
+        //         }
+        //     }
+        // });
+        
+// ... existing code ...
 
+questions.questionData.forEach((question) => {
+    const userResponse = responses.find(r => r.questionNumber === question.questionNumber);
+    
+    // Handle both answered and unanswered questions
+    if (userResponse) {
+        const isCorrect = userResponse.selectedAnswer.trim().toLowerCase() === 
+                        question.correctAnswer.trim().toLowerCase();
+        
+        if (isCorrect) {
+            obtainedMarks += marksPerQuestion;
+            strongAreas.push({
+                questionText: question.questionText,
+                questionTopic: question.questionTopic,
+                questionNumber: question.questionNumber,
+                queType: question.queType
+            });
+        } else {
+            weakAreas.push({
+                questionText: question.questionText,
+                questionTopic: question.questionTopic,
+                questionNumber: question.questionNumber,
+                queType: question.queType,
+                correctAnswer: question.correctAnswer,
+                userAnswer: userResponse.selectedAnswer
+            });
+        }
+    } else {
+        // Handle unanswered questions as incorrect
+        weakAreas.push({
+            questionText: question.questionText,
+            questionTopic: question.questionTopic,
+            questionNumber: question.questionNumber,
+            queType: question.queType,
+            correctAnswer: question.correctAnswer,
+            userAnswer: "Not answered"
+        });
+    }
+});
 
 
         const percentage = (obtainedMarks / totalMarks) * 100;
