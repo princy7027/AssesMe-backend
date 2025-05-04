@@ -85,11 +85,10 @@ exports.calculateResult = async (req, res) => {
             }
         });
 
-// ... rest of the code remains the same ...
 
 
         const percentage = (obtainedMarks / totalMarks) * 100;
-        const isPassed = percentage >= exam.passingMarks;
+        const isPassed = obtainedMarks >= exam.passingMarks;
 
         const result = new Result({
             userId,
